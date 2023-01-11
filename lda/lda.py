@@ -3,10 +3,13 @@ from scipy.special import gammaln, psi
 import random
 from nltk import word_tokenize
 import numpy as np
+import tqdm
 
 
 class LDA(object):
-    def __init__(self, docs, n_topics, minf=2, maxf=0.5, verbose=False):
+    def __init__(self, docs, n_topics, minf=2, maxf=0.5, random_seed=None, verbose=False):
+        if random_seed:
+            random.seed(random_seed)
         self.n_topics = n_topics
         self.verbose = verbose
         # Find corpus term frequency
@@ -19,7 +22,7 @@ class LDA(object):
                 frequency[word] += 1
 
         # Build dictionary: {} returns a set
-        self.vocab = list({word for doc in tokenized_docs for word in doc if frequency[word] > minf})
+        self.vocab = list({word for doc in tokenized_docs for word in doc if frequency[word] > minf and len(word)>1})
         self.vocab.sort()
         # Number of words in vocabulary
         self.n_words = len(self.vocab)
@@ -215,9 +218,9 @@ class LDA(object):
 
         # Start the sampling process
         samples_after_burnin = 0
+        pbar = tqdm.tqdm(total=nsamples)
         for sample in range(nsamples):
-            print(f'Progress: {100 * (sample + 1) / nsamples: .2f}% ({sample + 1}/{nsamples}.).           ', end="\r",
-                  flush=True)
+            pbar.update(1)
             for doc_id, doc in self.documents.items():
                 for position_in_doc, word_id in enumerate(doc):
                     # Draw new random topic from full conditional distribution

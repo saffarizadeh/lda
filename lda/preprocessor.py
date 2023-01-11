@@ -40,7 +40,7 @@ class Preprocessor(object):
         for word, tag in tagged_words:
             word = word.translate(self.table)
             tag = self.get_wordnet_pos(tag)
-            if word not in self.stwords:
+            if word not in self.stwords and len(word) > 1:
                 if tag:
                     reduced = self.wnl.lemmatize(word, tag)
                 else:
@@ -53,6 +53,10 @@ class Preprocessor(object):
     def clean_documents(self, documents):
         cleaned_documents = []
         for document in documents:
+            try:
+                document = document.strip()
+            except:
+                pass
             if type(document) == type('') and document != '' and document is not np.nan:
                 document = self.clean_document(document)
             else:
